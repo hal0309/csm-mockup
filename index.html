@@ -3,23 +3,287 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSM Mockup</title>
+  <title>あさごはんメーカー</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
     body {
-      font-family: system-ui, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background: radial-gradient(circle at 30% 20%, #F2EEE4, #E4DFD3);
       min-height: 100vh;
-      margin: 0;
-      background: #f5f5f5;
     }
-    h1 {
-      color: #333;
-    }
+    @keyframes floaty  { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-12px) rotate(-3deg); } }
+    @keyframes floaty2 { 0%,100% { transform: translateY(0) rotate(4deg);  } 50% { transform: translateY(-16px) rotate(4deg);  } }
+    @keyframes bob     { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+    @keyframes screenIn { 0% { transform: translateY(20px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+    @keyframes popIn   { 0% { transform: scale(.7); opacity: 0; } 60% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes steam   { 0% { transform: translateY(0) scaleX(1); opacity: 0; } 30% { opacity: .55; } 100% { transform: translateY(-22px) scaleX(1.4); opacity: 0; } }
+
+    .btn-start  { transition: transform .12s ease, box-shadow .12s ease; }
+    .btn-start:hover  { transform: translateY(-2px); box-shadow: 0 9px 0 #E3A21F, 0 18px 28px -8px rgba(227,162,31,.6) !important; }
+    .btn-start:active { transform: translateY(5px);  box-shadow: 0 2px 0 #E3A21F !important; }
+
+    .btn-choice { transition: transform .12s ease; }
+    .btn-choice:hover  { transform: translateY(-2px); }
+    .btn-choice:active { transform: translateY(2px); }
+
+    .btn-back:hover { background: #FFFDF8 !important; }
+
+    .btn-decide { transition: transform .12s ease, box-shadow .12s ease; }
+    .btn-decide:hover  { transform: translateY(-2px); }
+    .btn-decide:active { transform: translateY(5px); box-shadow: 0 2px 0 #4A9A82 !important; }
+
+    .btn-reset { transition: transform .12s ease, box-shadow .12s ease; }
+    .btn-reset:hover  { transform: translateY(-2px); }
+    .btn-reset:active { transform: translateY(4px); box-shadow: 0 2px 0 #2E271B !important; }
   </style>
 </head>
 <body>
-  <h1>Hello, GitHub Pages!</h1>
+<div id="app"></div>
+<script>
+const DATA = [
+  { id:1,  input:{volume:'light',mood:'sweet',  cost:'budget'}, bread:{name:'チョココロネ',       emoji:'🥐'}, smoothie:{name:'ココアバナナミルク',      emoji:'🥛',base:'ぎゅうにゅう 🥛',ingredient1:'ばなな 🍌',          ingredient2:'ココアパウダー 🍫'}, description:'おやつ感覚でサクッとエネルギーチャージできる、甘党に嬉しいお手軽セット！' },
+  { id:2,  input:{volume:'light',mood:'sweet',  cost:'rich'},   bread:{name:'クロワッサン',        emoji:'🥐'}, smoothie:{name:'贅沢ダブルベリー',        emoji:'🍓',base:'よーぐると 🥛',  ingredient1:'いちご 🍓',           ingredient2:'ぶるーべりー 🫐'}, description:'バター香るサクサクのクロワッサンに、濃厚ヨーグルトと2種のベリーでご褒美の朝。' },
+  { id:3,  input:{volume:'light',mood:'fresh',  cost:'budget'}, bread:{name:'バタートースト',      emoji:'🍞'}, smoothie:{name:'すっきりアップルレモン',  emoji:'🍎',base:'みず 💧',        ingredient1:'りんご 🍎',           ingredient2:'れもん 🍋'},        description:'定番のシンプルバタートーストに、レモンの酸味が効いたスムージーで目覚めすっきり！' },
+  { id:4,  input:{volume:'light',mood:'fresh',  cost:'rich'},   bread:{name:'塩パン',              emoji:'🧂'}, smoothie:{name:'シトラスココナッツ',      emoji:'🥥',base:'ここなっつうぉーたー 🥥',ingredient1:'おれんじ 🍊',      ingredient2:'グレープフルーツ 🍊'},description:'パン本来の旨味を味わえる塩パンに、ココナッツウォーターベースの柑橘スムージーで南国気分。' },
+  { id:5,  input:{volume:'light',mood:'healthy',cost:'budget'}, bread:{name:'ライ麦パン',          emoji:'🥖'}, smoothie:{name:'グリーングロウ豆乳',      emoji:'🥛',base:'とうにゅう 🥛',  ingredient1:'ほうれん草 🥬',       ingredient2:'りんご 🍎'},        description:'食物繊維たっぷりのヘルシーライ麦パンと、ほうれん草をリンゴで飲みやすくした豆乳ベース。' },
+  { id:6,  input:{volume:'light',mood:'healthy',cost:'rich'},   bread:{name:'キャロットラペサンド', emoji:'🥕'}, smoothie:{name:'アボカドグリーンキウイ',  emoji:'🥑',base:'あーもんどみるく 🥛',ingredient1:'アボカド 🥑',       ingredient2:'キウイ 🥝'},        description:'彩り豊かなキャロットラペと、栄養たっぷりアボカドにキウイの甘酸っぱさを添えた美肌朝食。' },
+  { id:7,  input:{volume:'heavy',mood:'sweet',  cost:'budget'}, bread:{name:'チョコデニッシュ',    emoji:'🥐'}, smoothie:{name:'ハニーバナナミルク',      emoji:'🍌',base:'ぎゅうにゅう 🥛',ingredient1:'ばなな 🍌',           ingredient2:'はちみつ 🍯'},      description:'とろけるチョコのデニッシュに、ハチミツ入りのバナナミルクで朝から満腹大満足！' },
+  { id:8,  input:{volume:'heavy',mood:'sweet',  cost:'rich'},   bread:{name:'フレンチトースト',    emoji:'🥞'}, smoothie:{name:'ピーチマンゴーラッシー',  emoji:'🍑',base:'よーぐると 🥛',  ingredient1:'もも 🍑',             ingredient2:'マンゴー 🥭'},      description:'メープル香るふわとろフレンチトーストに、ももとマンゴーの高級リッチスムージー。' },
+  { id:9,  input:{volume:'heavy',mood:'fresh',  cost:'budget'}, bread:{name:'焼きそばパン',        emoji:'🌭'}, smoothie:{name:'とまと＆パインシャワー',  emoji:'🍅',base:'みず 💧',        ingredient1:'とまと 🍅',           ingredient2:'ぱいなっぷる 🍍'}, description:'炭水化物でエナジーチャージ！酸味のあるトマト＆パインのスムージーが後味をすっきりさせます。' },
+  { id:10, input:{volume:'heavy',mood:'fresh',  cost:'rich'},   bread:{name:'エビカツバーガー',    emoji:'🍔'}, smoothie:{name:'ミントベリーソーダ',      emoji:'🍓',base:'たんさんすい 🫧', ingredient1:'ミックスベリー 🫐',  ingredient2:'ミント 🌿'},         description:'ぷりぷりエビカツの贅沢バーガーに、シュワっと爽快な炭酸ベリー＆ミントですっきり豪華に。' },
+  { id:11, input:{volume:'heavy',mood:'healthy',cost:'budget'}, bread:{name:'サラダチキンサンド',  emoji:'🥪'}, smoothie:{name:'グリーンプロテイン豆乳',  emoji:'🥦',base:'とうにゅう 🥛',  ingredient1:'ほうれん草 🥬',       ingredient2:'ばなな 🍌'},        description:'筋トレ中にもおすすめ！高タンパクなチキンサンドと、バナナで飲みやすくしたグリーンスムージー。' },
+  { id:12, input:{volume:'heavy',mood:'healthy',cost:'rich'},   bread:{name:'アボカドエッグトースト',emoji:'🥑'},smoothie:{name:'黒ごまきなこ豆乳',       emoji:'🥛',base:'とうにゅう 🥛',  ingredient1:'くろごま 🫘',         ingredient2:'きなこ 🥜'},        description:'カフェ風お洒落トーストに、セサミンとイソフラボンがたっぷり詰まった濃厚和風スムージー。' }
+];
+
+let state = { screen: 'top', volume: null, mood: null, cost: null };
+
+function setState(partial) {
+  state = { ...state, ...partial };
+  render();
+}
+
+function parse(str) {
+  const p = String(str || '').trim().split(/\s+/);
+  return { name: p[0] || '', emoji: p.slice(1).join(' ') || '' };
+}
+
+function check(color, radius, size = 27) {
+  return `
+    <div style="position:absolute;inset:-2px;border:3px solid ${color};border-radius:${radius};pointer-events:none;animation:popIn .25s ease;"></div>
+    <div style="position:absolute;top:-9px;right:-7px;width:${size}px;height:${size}px;background:${color};border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:${size < 27 ? 13 : 14}px;font-weight:800;">✓</div>
+  `;
+}
+
+function renderTop() {
+  return `
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding:64px 30px 38px;background:linear-gradient(180deg,#FFE39A 0%,#FFEFC2 48%,#FFF8EC 100%);animation:screenIn .5s ease both;">
+      <div style="font-size:13px;font-weight:700;letter-spacing:3px;color:#C99A2E;">MORNING ROUTINE</div>
+      <h1 style="margin:10px 0 0;font-size:38px;font-weight:800;color:#4A3F2E;text-align:center;line-height:1.25;letter-spacing:1px;">あさごはん<br>メーカー</h1>
+      <div style="margin-top:10px;font-size:14px;font-weight:500;color:#8A7B5E;">きょうの気分で、ぴったりの朝食を。</div>
+      <div style="position:relative;flex:1;width:100%;display:flex;align-items:center;justify-content:center;">
+        <div style="position:relative;width:220px;height:220px;">
+          <div style="position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);width:200px;height:200px;border-radius:50%;background:radial-gradient(circle at 50% 38%,#ffffff,#FFF1CE);box-shadow:0 18px 36px -10px rgba(201,154,46,.45),inset 0 0 0 8px rgba(255,255,255,.7);"></div>
+          <div style="position:absolute;left:14px;top:30px;font-size:96px;animation:floaty 4.2s ease-in-out infinite;filter:drop-shadow(0 10px 12px rgba(120,80,20,.28));">🥐</div>
+          <div style="position:absolute;right:6px;top:78px;font-size:88px;animation:floaty2 3.6s ease-in-out infinite;filter:drop-shadow(0 10px 12px rgba(120,80,20,.28));">🥤</div>
+          <div style="position:absolute;left:70px;top:-6px;font-size:34px;animation:bob 3s ease-in-out infinite;">🍓</div>
+          <div style="position:absolute;right:16px;top:12px;font-size:26px;animation:bob 2.4s ease-in-out infinite .4s;">✨</div>
+        </div>
+      </div>
+      <button class="btn-start" onclick="setState({screen:'select'})"
+        style="width:100%;padding:19px;border:none;border-radius:24px;background:#FFC83D;color:#4A3F2E;font-family:inherit;font-size:19px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 7px 0 #E3A21F,0 14px 24px -8px rgba(227,162,31,.6);">
+        朝食をきめに行く！　🍳
+      </button>
+      <div style="margin-top:16px;font-size:12px;color:#B7A98A;">12パターンから、あなたの一皿を。</div>
+    </div>
+  `;
+}
+
+function volBtn(emoji, label, en, val) {
+  const active = state.volume === val;
+  return `
+    <button class="btn-choice" onclick="setState({volume:'${val}'})"
+      style="position:relative;flex:1;background:#fff;border:2px solid #F1E7CF;border-radius:22px;padding:18px 8px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 0 #F0E6CE;">
+      <div style="font-size:40px;line-height:1;">${emoji}</div>
+      <div style="font-size:15px;font-weight:700;color:#4A3F2E;">${label}</div>
+      <div style="font-size:11px;color:#B0A488;letter-spacing:1px;">${en}</div>
+      ${active ? check('#FFC83D','22px') : ''}
+    </button>`;
+}
+
+function moodBtn(emoji, label, en, val) {
+  const active = state.mood === val;
+  return `
+    <button class="btn-choice" onclick="setState({mood:'${val}'})"
+      style="position:relative;flex:1;background:#fff;border:2px solid #E7F1EA;border-radius:20px;padding:16px 4px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:5px;box-shadow:0 4px 0 #E2EFE7;">
+      <div style="font-size:34px;line-height:1;">${emoji}</div>
+      <div style="font-size:14px;font-weight:700;color:#4A3F2E;">${label}</div>
+      <div style="font-size:10px;color:#A9BCB2;letter-spacing:.5px;">${en}</div>
+      ${active ? check('#5FB89C','20px',26) : ''}
+    </button>`;
+}
+
+function costBtn(emoji, label, en, val) {
+  const active = state.cost === val;
+  return `
+    <button class="btn-choice" onclick="setState({cost:'${val}'})"
+      style="position:relative;flex:1;background:#fff;border:2px solid #FBE7DD;border-radius:22px;padding:18px 8px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 0 #F7E2D6;">
+      <div style="font-size:40px;line-height:1;">${emoji}</div>
+      <div style="font-size:15px;font-weight:700;color:#4A3F2E;">${label}</div>
+      <div style="font-size:11px;color:#C9A998;letter-spacing:1px;">${en}</div>
+      ${active ? check('#FF9B7A','22px') : ''}
+    </button>`;
+}
+
+function renderSelect() {
+  const can = !!(state.volume && state.mood && state.cost);
+  return `
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#FFF8EC;animation:screenIn .42s ease both;">
+      <div style="flex-shrink:0;padding:50px 26px 14px;background:linear-gradient(180deg,#E3F3EC,#FFF8EC);display:flex;align-items:center;gap:12px;">
+        <button class="btn-back" onclick="setState({screen:'top',volume:null,mood:null,cost:null})"
+          style="width:40px;height:40px;flex-shrink:0;border:none;border-radius:14px;background:#ffffff;color:#7A6E58;font-size:18px;cursor:pointer;box-shadow:0 3px 8px rgba(120,100,60,.14);">‹</button>
+        <div>
+          <div style="font-size:19px;font-weight:800;color:#4A3F2E;">きょうの気分は？</div>
+          <div style="font-size:12px;color:#9A8E78;">3つえらんで、朝食を決めよう</div>
+        </div>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;padding:8px 22px 22px;">
+        <div style="margin-top:14px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:18px;">🍽️</span>
+          <span style="font-size:15px;font-weight:700;color:#4A3F2E;">お腹のすき具合は？</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:12px;">
+          ${volBtn('🥐','軽め','light','light')}
+          ${volBtn('🍔','しっかり','heavy','heavy')}
+        </div>
+
+        <div style="margin-top:24px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:18px;">🌈</span>
+          <span style="font-size:15px;font-weight:700;color:#4A3F2E;">明日の気分は？</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:10px;">
+          ${moodBtn('🍫','甘い','sweet','sweet')}
+          ${moodBtn('🍋','さっぱり','fresh','fresh')}
+          ${moodBtn('🥦','ヘルシー','healthy','healthy')}
+        </div>
+
+        <div style="margin-top:24px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:18px;">👛</span>
+          <span style="font-size:15px;font-weight:700;color:#4A3F2E;">お財布事情は？</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:12px;">
+          ${costBtn('💰','節約','budget','budget')}
+          ${costBtn('✨','ご褒美','rich','rich')}
+        </div>
+      </div>
+
+      <div style="flex-shrink:0;padding:14px 22px 26px;background:linear-gradient(180deg,rgba(255,248,236,0),#FFF8EC 40%);">
+        ${can
+          ? `<button class="btn-decide" onclick="setState({screen:'result'})"
+               style="width:100%;padding:18px;border:none;border-radius:22px;background:#5FB89C;color:#fff;font-family:inherit;font-size:18px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 7px 0 #4A9A82,0 14px 24px -8px rgba(95,184,156,.6);animation:popIn .3s ease;">
+               決定！　🍴
+             </button>`
+          : `<div style="width:100%;padding:18px;border-radius:22px;background:#EDE6D7;color:#B7A98A;font-size:16px;font-weight:700;text-align:center;letter-spacing:1px;">3つすべて選んでね</div>`
+        }
+      </div>
+    </div>
+  `;
+}
+
+function renderResult() {
+  const r = DATA.find(d => d.input.volume === state.volume && d.input.mood === state.mood && d.input.cost === state.cost);
+  if (!r) return '';
+
+  const b  = parse(r.smoothie.base);
+  const i1 = parse(r.smoothie.ingredient1);
+  const i2 = parse(r.smoothie.ingredient2);
+  const nodes = [
+    { tag:'ベース', name:b.name,  emoji:b.emoji,  bg:'#EAF6F0', ring:'#5FB89C', plus:true },
+    { tag:'具材 1', name:i1.name, emoji:i1.emoji, bg:'#FFF4D6', ring:'#E0A93A', plus:true },
+    { tag:'具材 2', name:i2.name, emoji:i2.emoji, bg:'#FCEBE3', ring:'#FF9B7A', plus:false }
+  ];
+
+  const nodesHtml = nodes.map(n => `
+    <div style="display:flex;align-items:center;gap:14px;padding:7px 0;">
+      <div style="width:56px;height:56px;flex-shrink:0;border-radius:50%;background:${n.bg};border:2px solid ${n.ring};display:flex;align-items:center;justify-content:center;font-size:28px;">${n.emoji}</div>
+      <div style="flex:1;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:${n.ring};">${n.tag}</div>
+        <div style="font-size:16px;font-weight:700;color:#4A3F2E;">${n.name}</div>
+      </div>
+      ${n.plus ? '<div style="font-size:18px;font-weight:800;color:#C9BFA8;">＋</div>' : ''}
+    </div>
+  `).join('');
+
+  return `
+    <div style="position:absolute;inset:0;overflow-y:auto;background:linear-gradient(180deg,#E3F3EC 0%,#FFF8EC 34%);animation:screenIn .45s ease both;">
+      <div style="padding:52px 24px 30px;">
+        <div style="text-align:center;">
+          <div style="display:inline-block;padding:6px 16px;border-radius:999px;background:#fff;color:#5FB89C;font-size:12px;font-weight:800;letter-spacing:2px;box-shadow:0 3px 10px rgba(95,184,156,.18);">YOUR BREAKFAST</div>
+          <div style="margin-top:12px;font-size:20px;font-weight:800;color:#4A3F2E;">きみの朝食はこれ！</div>
+        </div>
+
+        <div style="margin-top:20px;background:#fff;border-radius:28px;padding:24px;display:flex;align-items:center;gap:18px;box-shadow:0 14px 30px -14px rgba(120,90,30,.3);animation:popIn .5s ease both;">
+          <div style="width:92px;height:92px;flex-shrink:0;border-radius:50%;background:radial-gradient(circle at 50% 40%,#FFF6DC,#FFE7A8);display:flex;align-items:center;justify-content:center;font-size:50px;box-shadow:inset 0 0 0 5px rgba(255,255,255,.7);">${r.bread.emoji}</div>
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#D0A93C;">本日のパン 🍞</div>
+            <div style="margin-top:5px;font-size:23px;font-weight:800;color:#4A3F2E;line-height:1.2;">${r.bread.name}</div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;background:#fff;border-radius:28px;padding:24px 24px 26px;box-shadow:0 14px 30px -14px rgba(95,184,156,.32);animation:popIn .5s ease .08s both;">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div style="position:relative;width:78px;height:78px;flex-shrink:0;border-radius:50%;background:radial-gradient(circle at 50% 40%,#F0FBF6,#CDEFE1);display:flex;align-items:center;justify-content:center;font-size:42px;box-shadow:inset 0 0 0 5px rgba(255,255,255,.7);">
+              ${r.smoothie.emoji}
+              <div style="position:absolute;top:-6px;left:24px;width:14px;height:18px;background:rgba(255,255,255,.8);border-radius:50%;filter:blur(2px);animation:steam 2.6s ease-in-out infinite;"></div>
+              <div style="position:absolute;top:-10px;left:40px;width:12px;height:16px;background:rgba(255,255,255,.7);border-radius:50%;filter:blur(2px);animation:steam 2.6s ease-in-out infinite .9s;"></div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#5FB89C;">本日のスムージー 🥤</div>
+              <div style="margin-top:5px;font-size:21px;font-weight:800;color:#4A3F2E;line-height:1.2;">${r.smoothie.name}</div>
+            </div>
+          </div>
+          <div style="margin-top:20px;padding-top:18px;border-top:2px dashed #E7F1EA;">
+            <div style="font-size:12px;font-weight:700;color:#9A8E78;letter-spacing:1px;margin-bottom:6px;">— RECIPE —</div>
+            ${nodesHtml}
+          </div>
+        </div>
+
+        <div style="position:relative;margin-top:18px;background:#FFF3CF;border-radius:22px;padding:18px 20px;box-shadow:0 6px 16px -8px rgba(201,154,46,.3);animation:popIn .5s ease .16s both;">
+          <div style="position:absolute;top:-10px;left:26px;width:20px;height:20px;background:#FFF3CF;transform:rotate(45deg);"></div>
+          <div style="font-size:14px;font-weight:500;line-height:1.75;color:#6E5F40;">${r.description}</div>
+        </div>
+
+        <button class="btn-reset" onclick="setState({screen:'top',volume:null,mood:null,cost:null})"
+          style="margin-top:22px;width:100%;padding:17px;border:2px solid #4A3F2E;border-radius:22px;background:#4A3F2E;color:#FFE39A;font-family:inherit;font-size:17px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 6px 0 #2E271B;">
+          もう一度引き直す 🔄
+        </button>
+        <div style="height:10px;"></div>
+      </div>
+    </div>
+  `;
+}
+
+function render() {
+  const screen = state.screen === 'top' ? renderTop()
+               : state.screen === 'select' ? renderSelect()
+               : renderResult();
+  document.getElementById('app').innerHTML = `
+    <div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:24px;">
+      <div style="position:relative;width:390px;height:844px;border-radius:46px;background:#1f1b16;padding:11px;box-shadow:0 40px 80px -24px rgba(60,48,30,.5),0 0 0 2px rgba(0,0,0,.06);">
+        <div style="position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:#FFF8EC;">
+          ${screen}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+render();
+</script>
 </body>
 </html>
