@@ -149,7 +149,7 @@ function checkmark(color, radius, size) {
 }
 
 // ── Screen: TOP ───────────────────────────────────────────────────────────────
-function renderTop() {
+function renderTop(animate) {
   const p = palette();
   const hasProfile = !!(state.gender || state.stage);
   const gLabel = (GENDER_OPTS.find(o => o.key === state.gender) || {}).label;
@@ -157,7 +157,7 @@ function renderTop() {
   const profileText = [sLabel, gLabel].filter(Boolean).join(' ・ ');
 
   return `
-    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding:60px 30px 36px;background:linear-gradient(180deg,${p.soft} 0%,#FFEFC2 46%,#FFF8EC 100%);animation:screenIn .5s ease both;">
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding:60px 30px 36px;background:linear-gradient(180deg,${p.soft} 0%,#FFEFC2 46%,#FFF8EC 100%);${animate ? 'animation:screenIn .5s ease both;' : ''}">
       <button class="btn-settings" onclick="setState({screen:'settings'})"
         style="position:absolute;top:24px;right:22px;display:flex;align-items:center;gap:6px;padding:8px 14px 8px 11px;border:none;border-radius:999px;background:rgba(255,255,255,.78);color:#6E5F40;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(120,90,30,.18);">
         ⚙️ せってい
@@ -187,7 +187,7 @@ function renderTop() {
 }
 
 // ── Screen: SETTINGS ─────────────────────────────────────────────────────────
-function renderSettings() {
+function renderSettings(animate) {
   const p = palette();
 
   const themeBtns = PALETTES.map((pl, i) => {
@@ -228,7 +228,7 @@ function renderSettings() {
   }).join('');
 
   return `
-    <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#FFF8EC;animation:screenIn .42s ease both;">
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#FFF8EC;${animate ? 'animation:screenIn .42s ease both;' : ''}">
       <div style="flex-shrink:0;padding:50px 26px 16px;background:linear-gradient(180deg,${p.tint},#FFF8EC);display:flex;align-items:center;gap:12px;">
         <button class="btn-back" onclick="setState({screen:'top'})"
           style="width:40px;height:40px;flex-shrink:0;border:none;border-radius:14px;background:#fff;color:#7A6E58;font-size:18px;cursor:pointer;box-shadow:0 3px 8px rgba(120,100,60,.14);">‹</button>
@@ -266,7 +266,7 @@ function renderSettings() {
 }
 
 // ── Screen: SELECT ────────────────────────────────────────────────────────────
-function renderSelect() {
+function renderSelect(animate) {
   const p = palette();
   const can = !!(state.volume && state.mood && state.cost);
 
@@ -304,7 +304,7 @@ function renderSelect() {
   }
 
   return `
-    <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#FFF8EC;animation:screenIn .42s ease both;">
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#FFF8EC;${animate ? 'animation:screenIn .42s ease both;' : ''}">
       <div style="flex-shrink:0;padding:50px 26px 14px;background:linear-gradient(180deg,${p.tint},#FFF8EC);display:flex;align-items:center;gap:12px;">
         <button class="btn-back" onclick="setState({screen:'top'})"
           style="width:40px;height:40px;flex-shrink:0;border:none;border-radius:14px;background:#fff;color:#7A6E58;font-size:18px;cursor:pointer;box-shadow:0 3px 8px rgba(120,100,60,.14);">‹</button>
@@ -358,7 +358,7 @@ function renderSelect() {
 }
 
 // ── Screen: RESULT ────────────────────────────────────────────────────────────
-function renderResult() {
+function renderResult(animate) {
   const p = palette();
   const r = DATA.find(d => d.input.volume === state.volume && d.input.mood === state.mood && d.input.cost === state.cost);
   if (!r) return `
@@ -390,7 +390,7 @@ function renderResult() {
   `).join('');
 
   return `
-    <div style="position:absolute;inset:0;overflow-y:auto;background:linear-gradient(180deg,${p.tint} 0%,#FFF8EC 34%);animation:screenIn .45s ease both;">
+    <div style="position:absolute;inset:0;overflow-y:auto;background:linear-gradient(180deg,${p.tint} 0%,#FFF8EC 34%);${animate ? 'animation:screenIn .45s ease both;' : ''}">
       <div style="padding:50px 24px 28px;">
         <div style="text-align:center;">
           <div style="display:inline-block;padding:6px 16px;border-radius:999px;background:#fff;color:${p.secondary};font-size:12px;font-weight:800;letter-spacing:2px;box-shadow:0 3px 10px rgba(95,120,110,.18);">YOUR BREAKFAST</div>
@@ -451,22 +451,34 @@ function renderResult() {
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
+let prevScreen = null;
+
 function render() {
   const p = palette();
-  const screen = state.screen === 'top'      ? renderTop()
-               : state.screen === 'settings' ? renderSettings()
-               : state.screen === 'select'   ? renderSelect()
-               :                               renderResult();
+  const screenChanged = state.screen !== prevScreen;
+  prevScreen = state.screen;
 
-  document.getElementById('app').innerHTML = `
-    <div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at 30% 10%,#F2EEE4,#E2DDD1);">
-      <div style="position:relative;width:390px;height:844px;border-radius:46px;background:#1f1b16;padding:11px;box-shadow:0 30px 60px -22px rgba(60,48,30,.5),0 0 0 2px rgba(0,0,0,.06);">
-        <div style="position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:#FFF8EC;${css(p)}">
-          ${screen}
+  const screenHtml = state.screen === 'top'      ? renderTop(screenChanged)
+                   : state.screen === 'settings' ? renderSettings(screenChanged)
+                   : state.screen === 'select'   ? renderSelect(screenChanged)
+                   :                               renderResult(screenChanged);
+
+  const phoneInner = document.getElementById('phone-inner');
+  if (phoneInner) {
+    phoneInner.setAttribute('style',
+      `position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:#FFF8EC;${css(p)}`);
+    phoneInner.innerHTML = screenHtml;
+  } else {
+    document.getElementById('app').innerHTML = `
+      <div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at 30% 10%,#F2EEE4,#E2DDD1);">
+        <div style="position:relative;width:390px;height:844px;border-radius:46px;background:#1f1b16;padding:11px;box-shadow:0 30px 60px -22px rgba(60,48,30,.5),0 0 0 2px rgba(0,0,0,.06);">
+          <div id="phone-inner" style="position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:#FFF8EC;${css(p)}">
+            ${screenHtml}
+          </div>
         </div>
       </div>
-    </div>
-  `;
+    `;
+  }
 }
 
 render();
