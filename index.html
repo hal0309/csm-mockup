@@ -10,12 +10,8 @@
   <style>
     * { box-sizing: border-box; }
     html, body { margin: 0; padding: 0; }
-    body {
-      font-family: 'M PLUS Rounded 1c', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      background: radial-gradient(circle at 30% 20%, #F2EEE4, #E4DFD3);
-      min-height: 100vh;
-    }
+    body { font-family: 'M PLUS Rounded 1c', sans-serif; -webkit-font-smoothing: antialiased; }
+
     @keyframes floaty  { 0%,100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-12px) rotate(-3deg); } }
     @keyframes floaty2 { 0%,100% { transform: translateY(0) rotate(4deg);  } 50% { transform: translateY(-16px) rotate(4deg);  } }
     @keyframes bob     { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
@@ -23,129 +19,295 @@
     @keyframes popIn   { 0% { transform: scale(.7); opacity: 0; } 60% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
     @keyframes steam   { 0% { transform: translateY(0) scaleX(1); opacity: 0; } 30% { opacity: .55; } 100% { transform: translateY(-22px) scaleX(1.4); opacity: 0; } }
 
-    .btn-start  { transition: transform .12s ease, box-shadow .12s ease; }
-    .btn-start:hover  { transform: translateY(-2px); box-shadow: 0 9px 0 #E3A21F, 0 18px 28px -8px rgba(227,162,31,.6) !important; }
-    .btn-start:active { transform: translateY(5px);  box-shadow: 0 2px 0 #E3A21F !important; }
+    .hover-up { transition: transform .12s ease; }
+    .hover-up:hover  { transform: translateY(-2px); }
+    .hover-up:active { transform: translateY(2px); }
 
-    .btn-choice { transition: transform .12s ease; }
-    .btn-choice:hover  { transform: translateY(-2px); }
-    .btn-choice:active { transform: translateY(2px); }
+    .btn-main { transition: transform .12s ease, box-shadow .12s ease; }
+    .btn-main:hover  { transform: translateY(-2px); }
+    .btn-main:active { transform: translateY(5px); }
 
-    .btn-back:hover { background: #FFFDF8 !important; }
+    .btn-save { transition: transform .12s ease, box-shadow .12s ease; }
+    .btn-save:hover  { transform: translateY(-2px); }
+    .btn-save:active { transform: translateY(4px); }
 
     .btn-decide { transition: transform .12s ease, box-shadow .12s ease; }
     .btn-decide:hover  { transform: translateY(-2px); }
-    .btn-decide:active { transform: translateY(5px); box-shadow: 0 2px 0 #4A9A82 !important; }
+    .btn-decide:active { transform: translateY(5px); }
 
     .btn-reset { transition: transform .12s ease, box-shadow .12s ease; }
     .btn-reset:hover  { transform: translateY(-2px); }
-    .btn-reset:active { transform: translateY(4px); box-shadow: 0 2px 0 #2E271B !important; }
+    .btn-reset:active { transform: translateY(4px); }
+
+    .btn-settings:hover { background: #fff !important; }
+    .btn-back:hover { background: #FFFDF8 !important; }
   </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-const DATA = [
-  { id:1,  input:{volume:'light',mood:'sweet',  cost:'budget'}, bread:{name:'チョココロネ',       emoji:'🥐'}, smoothie:{name:'ココアバナナミルク',      emoji:'🥛',base:'ぎゅうにゅう 🥛',ingredient1:'ばなな 🍌',          ingredient2:'ココアパウダー 🍫'}, description:'おやつ感覚でサクッとエネルギーチャージできる、甘党に嬉しいお手軽セット！' },
-  { id:2,  input:{volume:'light',mood:'sweet',  cost:'rich'},   bread:{name:'クロワッサン',        emoji:'🥐'}, smoothie:{name:'贅沢ダブルベリー',        emoji:'🍓',base:'よーぐると 🥛',  ingredient1:'いちご 🍓',           ingredient2:'ぶるーべりー 🫐'}, description:'バター香るサクサクのクロワッサンに、濃厚ヨーグルトと2種のベリーでご褒美の朝。' },
-  { id:3,  input:{volume:'light',mood:'fresh',  cost:'budget'}, bread:{name:'バタートースト',      emoji:'🍞'}, smoothie:{name:'すっきりアップルレモン',  emoji:'🍎',base:'みず 💧',        ingredient1:'りんご 🍎',           ingredient2:'れもん 🍋'},        description:'定番のシンプルバタートーストに、レモンの酸味が効いたスムージーで目覚めすっきり！' },
-  { id:4,  input:{volume:'light',mood:'fresh',  cost:'rich'},   bread:{name:'塩パン',              emoji:'🧂'}, smoothie:{name:'シトラスココナッツ',      emoji:'🥥',base:'ここなっつうぉーたー 🥥',ingredient1:'おれんじ 🍊',      ingredient2:'グレープフルーツ 🍊'},description:'パン本来の旨味を味わえる塩パンに、ココナッツウォーターベースの柑橘スムージーで南国気分。' },
-  { id:5,  input:{volume:'light',mood:'healthy',cost:'budget'}, bread:{name:'ライ麦パン',          emoji:'🥖'}, smoothie:{name:'グリーングロウ豆乳',      emoji:'🥛',base:'とうにゅう 🥛',  ingredient1:'ほうれん草 🥬',       ingredient2:'りんご 🍎'},        description:'食物繊維たっぷりのヘルシーライ麦パンと、ほうれん草をリンゴで飲みやすくした豆乳ベース。' },
-  { id:6,  input:{volume:'light',mood:'healthy',cost:'rich'},   bread:{name:'キャロットラペサンド', emoji:'🥕'}, smoothie:{name:'アボカドグリーンキウイ',  emoji:'🥑',base:'あーもんどみるく 🥛',ingredient1:'アボカド 🥑',       ingredient2:'キウイ 🥝'},        description:'彩り豊かなキャロットラペと、栄養たっぷりアボカドにキウイの甘酸っぱさを添えた美肌朝食。' },
-  { id:7,  input:{volume:'heavy',mood:'sweet',  cost:'budget'}, bread:{name:'チョコデニッシュ',    emoji:'🥐'}, smoothie:{name:'ハニーバナナミルク',      emoji:'🍌',base:'ぎゅうにゅう 🥛',ingredient1:'ばなな 🍌',           ingredient2:'はちみつ 🍯'},      description:'とろけるチョコのデニッシュに、ハチミツ入りのバナナミルクで朝から満腹大満足！' },
-  { id:8,  input:{volume:'heavy',mood:'sweet',  cost:'rich'},   bread:{name:'フレンチトースト',    emoji:'🥞'}, smoothie:{name:'ピーチマンゴーラッシー',  emoji:'🍑',base:'よーぐると 🥛',  ingredient1:'もも 🍑',             ingredient2:'マンゴー 🥭'},      description:'メープル香るふわとろフレンチトーストに、ももとマンゴーの高級リッチスムージー。' },
-  { id:9,  input:{volume:'heavy',mood:'fresh',  cost:'budget'}, bread:{name:'焼きそばパン',        emoji:'🌭'}, smoothie:{name:'とまと＆パインシャワー',  emoji:'🍅',base:'みず 💧',        ingredient1:'とまと 🍅',           ingredient2:'ぱいなっぷる 🍍'}, description:'炭水化物でエナジーチャージ！酸味のあるトマト＆パインのスムージーが後味をすっきりさせます。' },
-  { id:10, input:{volume:'heavy',mood:'fresh',  cost:'rich'},   bread:{name:'エビカツバーガー',    emoji:'🍔'}, smoothie:{name:'ミントベリーソーダ',      emoji:'🍓',base:'たんさんすい 🫧', ingredient1:'ミックスベリー 🫐',  ingredient2:'ミント 🌿'},         description:'ぷりぷりエビカツの贅沢バーガーに、シュワっと爽快な炭酸ベリー＆ミントですっきり豪華に。' },
-  { id:11, input:{volume:'heavy',mood:'healthy',cost:'budget'}, bread:{name:'サラダチキンサンド',  emoji:'🥪'}, smoothie:{name:'グリーンプロテイン豆乳',  emoji:'🥦',base:'とうにゅう 🥛',  ingredient1:'ほうれん草 🥬',       ingredient2:'ばなな 🍌'},        description:'筋トレ中にもおすすめ！高タンパクなチキンサンドと、バナナで飲みやすくしたグリーンスムージー。' },
-  { id:12, input:{volume:'heavy',mood:'healthy',cost:'rich'},   bread:{name:'アボカドエッグトースト',emoji:'🥑'},smoothie:{name:'黒ごまきなこ豆乳',       emoji:'🥛',base:'とうにゅう 🥛',  ingredient1:'くろごま 🫘',         ingredient2:'きなこ 🥜'},        description:'カフェ風お洒落トーストに、セサミンとイソフラボンがたっぷり詰まった濃厚和風スムージー。' }
+// ── Palettes ──────────────────────────────────────────────────────────────────
+const PALETTES = [
+  { name: 'はちみつ&ミント',   emoji: '🍯', primary: '#FFC83D', primaryDark: '#E3A21F', btnText: '#4A3F2E', secondary: '#5FB89C', secondaryDark: '#4A9A82', tertiary: '#FF9B7A', soft: '#FFE39A', tint: '#E3F3EC', plate: '#FFF1CE' },
+  { name: 'ベリー&ラベンダー', emoji: '🍓', primary: '#FF7FA3', primaryDark: '#E25C82', btnText: '#ffffff', secondary: '#9B8BE6', secondaryDark: '#7B6AD0', tertiary: '#FFB270', soft: '#FFD9E4', tint: '#ECE7FB', plate: '#FFE3EC' },
+  { name: 'オーシャン&サン',   emoji: '🌊', primary: '#45A9E6', primaryDark: '#2A8AC8', btnText: '#ffffff', secondary: '#4FCBB8', secondaryDark: '#36A893', tertiary: '#FFC25C', soft: '#CFEBFA', tint: '#D9F4EF', plate: '#DDF0FB' },
+  { name: 'マッチャ&きなこ',   emoji: '🍵', primary: '#9DBB63', primaryDark: '#7F9C48', btnText: '#33301C', secondary: '#CBA86A', secondaryDark: '#AC8B4F', tertiary: '#E0906A', soft: '#E7F0CE', tint: '#F2EAD6', plate: '#EEF3D7' },
+  { name: 'ラベンダー&レモン', emoji: '💜', primary: '#B49BE3', primaryDark: '#957ACF', btnText: '#ffffff', secondary: '#F1C84B', secondaryDark: '#D3A92E', tertiary: '#EF98BE', soft: '#EADFFB', tint: '#FBF2D2', plate: '#ECE2FB' }
 ];
 
-let state = { screen: 'top', volume: null, mood: null, cost: null };
+const GENDER_OPTS = [
+  { key: 'male',   label: '男性', emoji: '👦' },
+  { key: 'female', label: '女性', emoji: '👧' },
+  { key: 'other',  label: 'その他', emoji: '🧑' }
+];
+const STAGE_OPTS = [
+  { key: 'student',   label: '学生',    emoji: '🎒' },
+  { key: 'worker',    label: '社会人',  emoji: '💼' },
+  { key: 'homemaker', label: '主婦・主夫', emoji: '🏠' },
+  { key: 'senior',    label: 'シニア',  emoji: '🍵' }
+];
+
+const AMOUNTS = {
+  'ぎゅうにゅう': '150ml', 'よーぐると': '100g', 'みず': '100ml',
+  'ここなっつうぉーたー': '150ml', 'とうにゅう': '150ml', 'たんさんすい': '120ml', 'あーもんどみるく': '150ml',
+  'ばなな': '1本', 'いちご': '5粒', 'りんご': '1/2個', 'おれんじ': '1個',
+  'ほうれん草': 'ひとつかみ', 'アボカド': '1/2個', 'もも': '1/2個', 'とまと': '1個',
+  'ミックスベリー': 'ひとつかみ', 'くろごま': '大さじ1', 'ココアパウダー': '大さじ1',
+  'ぶるーべりー': '大さじ2', 'れもん': '1/4個', 'グレープフルーツ': '1/2個',
+  'キウイ': '1個', 'はちみつ': '大さじ1', 'マンゴー': '1/2個',
+  'ぱいなっぷる': '2切れ', 'ミント': '少々', 'きなこ': '大さじ1'
+};
+const COSTS = {
+  'ぎゅうにゅう': 30, 'よーぐると': 60, 'みず': 0, 'ここなっつうぉーたー': 90,
+  'とうにゅう': 35, 'たんさんすい': 20, 'あーもんどみるく': 70,
+  'ばなな': 30, 'いちご': 120, 'りんご': 50, 'おれんじ': 60, 'ほうれん草': 40,
+  'アボカド': 100, 'もも': 150, 'とまと': 40, 'ミックスベリー': 130, 'くろごま': 30,
+  'ココアパウダー': 25, 'ぶるーべりー': 120, 'れもん': 30, 'グレープフルーツ': 80,
+  'キウイ': 70, 'はちみつ': 20, 'マンゴー': 140, 'ぱいなっぷる': 60, 'ミント': 20, 'きなこ': 20
+};
+const TIMINGS = ['最初にいれる', '次に加える', '最後に加える'];
+const SURPRISES = {
+  1: 'シナモンをひとふりすると、おうちが一瞬でカフェの香りに大変身！？',
+  2: 'バルサミコ酢を2〜3滴たらすと、ベリーが大人の甘さにレベルアップ！？',
+  3: 'すりおろし生姜をほんの少し足すと、ポカポカ目覚めスムージーに！？',
+  4: 'ミントの葉を一枚そえるだけで、一気に南国リゾート気分が味わえるかも！？',
+  5: 'きなこをひとさじ足すと、香ばしさが出てぐっと飲みやすくなるかも！？',
+  6: 'ほんの少しのわさびを足すと、味がキリッと引き締まる大冒険ができるかも！？',
+  7: 'ピーナッツバターを少し溶かし込むと、背徳の濃厚さにハマるかも！？',
+  8: 'カルダモンをひとつまみで、本格チャイ風ラッシーに変身できるかも！？',
+  9: '黒こしょうをガリッとひと挽きすると、大人のガスパチョ風になるかも！？',
+  10: 'ライムをギュッと搾ると、モヒート気分の爽快さがプラスされるかも！？',
+  11: 'オートミールをひとさじ足すと、腹持ち最強の朝ごはんになるかも！？',
+  12: '黒蜜をひとたらしすると、和スイーツみたいなご褒美感が出るかも！？'
+};
+
+const DATA = [
+  { id:1,  input:{volume:'light',mood:'sweet',  cost:'budget'}, bread:{name:'チョココロネ',       emoji:'🥐'}, smoothie:{name:'ココアバナナミルク',     emoji:'🥛',base:'ぎゅうにゅう 🥛',ingredient1:'ばなな 🍌',         ingredient2:'ココアパウダー 🍫'}, description:'おやつ感覚でサクッとエネルギーチャージできる、甘党に嬉しいお手軽セット！' },
+  { id:2,  input:{volume:'light',mood:'sweet',  cost:'rich'},   bread:{name:'クロワッサン',        emoji:'🥐'}, smoothie:{name:'贅沢ダブルベリー',       emoji:'🍓',base:'よーぐると 🥛',  ingredient1:'いちご 🍓',          ingredient2:'ぶるーべりー 🫐'}, description:'バター香るサクサクのクロワッサンに、濃厚ヨーグルトと2種のベリーでご褒美の朝。' },
+  { id:3,  input:{volume:'light',mood:'fresh',  cost:'budget'}, bread:{name:'バタートースト',      emoji:'🍞'}, smoothie:{name:'すっきりアップルレモン', emoji:'🍎',base:'みず 💧',        ingredient1:'りんご 🍎',          ingredient2:'れもん 🍋'},        description:'定番のシンプルバタートーストに、レモンの酸味が効いたスムージーで目覚めすっきり！' },
+  { id:4,  input:{volume:'light',mood:'fresh',  cost:'rich'},   bread:{name:'塩パン',              emoji:'🧂'}, smoothie:{name:'シトラスココナッツ',     emoji:'🥥',base:'ここなっつうぉーたー 🥥',ingredient1:'おれんじ 🍊',     ingredient2:'グレープフルーツ 🍊'},description:'パン本来の旨味を味わえる塩パンに、ココナッツウォーターベースの柑橘スムージーで南国気分。' },
+  { id:5,  input:{volume:'light',mood:'healthy',cost:'budget'}, bread:{name:'ライ麦パン',          emoji:'🥖'}, smoothie:{name:'グリーングロウ豆乳',     emoji:'🥛',base:'とうにゅう 🥛',  ingredient1:'ほうれん草 🥬',      ingredient2:'りんご 🍎'},        description:'食物繊維たっぷりのヘルシーライ麦パンと、ほうれん草をリンゴで飲みやすくした豆乳ベース。' },
+  { id:6,  input:{volume:'light',mood:'healthy',cost:'rich'},   bread:{name:'キャロットラペサンド', emoji:'🥕'}, smoothie:{name:'アボカドグリーンキウイ', emoji:'🥑',base:'あーもんどみるく 🥛',ingredient1:'アボカド 🥑',      ingredient2:'キウイ 🥝'},        description:'彩り豊かなキャロットラペと、栄養たっぷりアボカドにキウイの甘酸っぱさを添えた美肌朝食。' },
+  { id:7,  input:{volume:'heavy',mood:'sweet',  cost:'budget'}, bread:{name:'チョコデニッシュ',    emoji:'🥐'}, smoothie:{name:'ハニーバナナミルク',     emoji:'🍌',base:'ぎゅうにゅう 🥛',ingredient1:'ばなな 🍌',          ingredient2:'はちみつ 🍯'},      description:'とろけるチョコのデニッシュに、ハチミツ入りのバナナミルクで朝から満腹大満足！' },
+  { id:8,  input:{volume:'heavy',mood:'sweet',  cost:'rich'},   bread:{name:'フレンチトースト',    emoji:'🥞'}, smoothie:{name:'ピーチマンゴーラッシー', emoji:'🍑',base:'よーぐると 🥛',  ingredient1:'もも 🍑',            ingredient2:'マンゴー 🥭'},      description:'メープル香るふわとろフレンチトーストに、ももとマンゴーの高級リッチスムージー。' },
+  { id:9,  input:{volume:'heavy',mood:'fresh',  cost:'budget'}, bread:{name:'焼きそばパン',        emoji:'🌭'}, smoothie:{name:'とまと＆パインシャワー', emoji:'🍅',base:'みず 💧',        ingredient1:'とまと 🍅',          ingredient2:'ぱいなっぷる 🍍'}, description:'炭水化物でエナジーチャージ！酸味のあるトマト＆パインのスムージーが後味をすっきりさせます。' },
+  { id:10, input:{volume:'heavy',mood:'fresh',  cost:'rich'},   bread:{name:'エビカツバーガー',    emoji:'🍔'}, smoothie:{name:'ミントベリーソーダ',     emoji:'🍓',base:'たんさんすい 🫧', ingredient1:'ミックスベリー 🫐', ingredient2:'ミント 🌿'},         description:'ぷりぷりエビカツの贅沢バーガーに、シュワっと爽快な炭酸ベリー＆ミントですっきり豪華に。' },
+  { id:11, input:{volume:'heavy',mood:'healthy',cost:'budget'}, bread:{name:'サラダチキンサンド',  emoji:'🥪'}, smoothie:{name:'グリーンプロテイン豆乳', emoji:'🥦',base:'とうにゅう 🥛',  ingredient1:'ほうれん草 🥬',      ingredient2:'ばなな 🍌'},        description:'筋トレ中にもおすすめ！高タンパクなチキンサンドと、バナナで飲みやすくしたグリーンスムージー。' },
+  { id:12, input:{volume:'heavy',mood:'healthy',cost:'rich'},   bread:{name:'アボカドエッグトースト',emoji:'🥑'},smoothie:{name:'黒ごまきなこ豆乳',    emoji:'🥛',base:'とうにゅう 🥛',  ingredient1:'くろごま 🫘',        ingredient2:'きなこ 🥜'},        description:'カフェ風お洒落トーストに、セサミンとイソフラボンがたっぷり詰まった濃厚和風スムージー。' }
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let state = { screen: 'top', theme: 0, gender: null, stage: null, volume: null, mood: null, cost: null };
 
 function setState(partial) {
   state = { ...state, ...partial };
   render();
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function parse(str) {
   const p = String(str || '').trim().split(/\s+/);
   return { name: p[0] || '', emoji: p.slice(1).join(' ') || '' };
 }
+function amt(name) { return AMOUNTS[name] || '適量'; }
+function cost(name) { return COSTS[name] || 30; }
 
-function check(color, radius, size = 27) {
-  return `
-    <div style="position:absolute;inset:-2px;border:3px solid ${color};border-radius:${radius};pointer-events:none;animation:popIn .25s ease;"></div>
-    <div style="position:absolute;top:-9px;right:-7px;width:${size}px;height:${size}px;background:${color};border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:${size < 27 ? 13 : 14}px;font-weight:800;">✓</div>
-  `;
+function palette() { return PALETTES[state.theme] || PALETTES[0]; }
+
+function css(p) {
+  return `--btn:${p.primary};--btnD:${p.primaryDark};--btnText:${p.btnText};` +
+    `--ringA:${p.primary};--ringB:${p.secondary};--ringC:${p.tertiary};` +
+    `--decide:${p.secondary};--decideD:${p.secondaryDark};` +
+    `--tint:${p.tint};--plate:${p.plate};--chipA:${p.primaryDark};--chipB:${p.secondary};--soft:${p.soft};`;
 }
 
+function checkmark(color, radius, size) {
+  size = size || 27;
+  const fs = size < 27 ? 12 : 14;
+  return `<div style="position:absolute;inset:-2px;border:3px solid ${color};border-radius:${radius};pointer-events:none;animation:popIn .25s ease;"></div>` +
+    `<div style="position:absolute;top:-${size < 27 ? 8 : 9}px;right:-7px;width:${size}px;height:${size}px;background:${color};border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:${fs}px;font-weight:800;">✓</div>`;
+}
+
+// ── Screen: TOP ───────────────────────────────────────────────────────────────
 function renderTop() {
+  const p = palette();
+  const hasProfile = !!(state.gender || state.stage);
+  const gLabel = (GENDER_OPTS.find(o => o.key === state.gender) || {}).label;
+  const sLabel = (STAGE_OPTS.find(o => o.key === state.stage) || {}).label;
+  const profileText = [sLabel, gLabel].filter(Boolean).join(' ・ ');
+
   return `
-    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding:64px 30px 38px;background:linear-gradient(180deg,#FFE39A 0%,#FFEFC2 48%,#FFF8EC 100%);animation:screenIn .5s ease both;">
-      <div style="font-size:13px;font-weight:700;letter-spacing:3px;color:#C99A2E;">MORNING ROUTINE</div>
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding:60px 30px 36px;background:linear-gradient(180deg,${p.soft} 0%,#FFEFC2 46%,#FFF8EC 100%);animation:screenIn .5s ease both;">
+      <button class="btn-settings" onclick="setState({screen:'settings'})"
+        style="position:absolute;top:24px;right:22px;display:flex;align-items:center;gap:6px;padding:8px 14px 8px 11px;border:none;border-radius:999px;background:rgba(255,255,255,.78);color:#6E5F40;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 3px 10px rgba(120,90,30,.18);">
+        ⚙️ せってい
+      </button>
+      <div style="margin-top:6px;font-size:13px;font-weight:700;letter-spacing:3px;color:${p.primaryDark};">MORNING ROUTINE</div>
       <h1 style="margin:10px 0 0;font-size:38px;font-weight:800;color:#4A3F2E;text-align:center;line-height:1.25;letter-spacing:1px;">あさごはん<br>メーカー</h1>
       <div style="margin-top:10px;font-size:14px;font-weight:500;color:#8A7B5E;">きょうの気分で、ぴったりの朝食を。</div>
-      <div style="position:relative;flex:1;width:100%;display:flex;align-items:center;justify-content:center;">
+      ${hasProfile ? `<div style="margin-top:12px;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;background:#fff;color:#6E5F40;font-size:13px;font-weight:700;box-shadow:0 3px 8px rgba(120,90,30,.12);">👤 ${profileText}</div>` : ''}
+
+      <div style="flex:1;width:100%;display:flex;align-items:center;justify-content:center;">
         <div style="position:relative;width:220px;height:220px;">
-          <div style="position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);width:200px;height:200px;border-radius:50%;background:radial-gradient(circle at 50% 38%,#ffffff,#FFF1CE);box-shadow:0 18px 36px -10px rgba(201,154,46,.45),inset 0 0 0 8px rgba(255,255,255,.7);"></div>
+          <div style="position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);width:200px;height:200px;border-radius:50%;background:radial-gradient(circle at 50% 38%,#ffffff,${p.plate});box-shadow:0 18px 36px -10px rgba(120,90,30,.32),inset 0 0 0 8px rgba(255,255,255,.7);"></div>
           <div style="position:absolute;left:14px;top:30px;font-size:96px;animation:floaty 4.2s ease-in-out infinite;filter:drop-shadow(0 10px 12px rgba(120,80,20,.28));">🥐</div>
           <div style="position:absolute;right:6px;top:78px;font-size:88px;animation:floaty2 3.6s ease-in-out infinite;filter:drop-shadow(0 10px 12px rgba(120,80,20,.28));">🥤</div>
           <div style="position:absolute;left:70px;top:-6px;font-size:34px;animation:bob 3s ease-in-out infinite;">🍓</div>
           <div style="position:absolute;right:16px;top:12px;font-size:26px;animation:bob 2.4s ease-in-out infinite .4s;">✨</div>
         </div>
       </div>
-      <button class="btn-start" onclick="setState({screen:'select'})"
-        style="width:100%;padding:19px;border:none;border-radius:24px;background:#FFC83D;color:#4A3F2E;font-family:inherit;font-size:19px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 7px 0 #E3A21F,0 14px 24px -8px rgba(227,162,31,.6);">
+
+      <button class="btn-main" onclick="setState({screen:'select'})"
+        style="width:100%;padding:19px;border:none;border-radius:24px;background:${p.primary};color:${p.btnText};font-family:inherit;font-size:19px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 7px 0 ${p.primaryDark};">
         朝食をきめに行く！　🍳
       </button>
-      <div style="margin-top:16px;font-size:12px;color:#B7A98A;">12パターンから、あなたの一皿を。</div>
+      <div style="margin-top:14px;font-size:12px;color:#B7A98A;">12パターンから、あなたの一皿を。</div>
     </div>
   `;
 }
 
-function volBtn(emoji, label, en, val) {
-  const active = state.volume === val;
+// ── Screen: SETTINGS ─────────────────────────────────────────────────────────
+function renderSettings() {
+  const p = palette();
+
+  const themeBtns = PALETTES.map((pl, i) => {
+    const sel = state.theme === i;
+    return `
+      <button class="hover-up" onclick="setState({theme:${i}})"
+        style="position:relative;text-align:left;background:#fff;border:2px solid #EFE7D6;border-radius:16px;padding:11px 12px;cursor:pointer;font-family:inherit;box-shadow:0 3px 0 #EFE7D6;">
+        <div style="display:flex;gap:4px;">
+          <span style="width:22px;height:22px;border-radius:50%;background:${pl.primary};"></span>
+          <span style="width:22px;height:22px;border-radius:50%;background:${pl.secondary};"></span>
+          <span style="width:22px;height:22px;border-radius:50%;background:${pl.tertiary};"></span>
+        </div>
+        <div style="margin-top:8px;font-size:12px;font-weight:700;color:#4A3F2E;">${pl.emoji} ${pl.name}</div>
+        ${sel ? checkmark(pl.primary, '16px', 24) : ''}
+      </button>`;
+  }).join('');
+
+  const genderBtns = GENDER_OPTS.map(o => {
+    const sel = state.gender === o.key;
+    return `
+      <button class="hover-up" onclick="setState({gender:'${o.key}'})"
+        style="position:relative;flex:1;background:#fff;border:2px solid #EFE7D6;border-radius:16px;padding:13px 4px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 3px 0 #EFE7D6;">
+        <div style="font-size:26px;line-height:1;">${o.emoji}</div>
+        <div style="font-size:12px;font-weight:700;color:#4A3F2E;">${o.label}</div>
+        ${sel ? checkmark(p.secondary, '16px', 22) : ''}
+      </button>`;
+  }).join('');
+
+  const stageBtns = STAGE_OPTS.map(o => {
+    const sel = state.stage === o.key;
+    return `
+      <button class="hover-up" onclick="setState({stage:'${o.key}'})"
+        style="position:relative;background:#fff;border:2px solid #EFE7D6;border-radius:16px;padding:13px 10px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:9px;box-shadow:0 3px 0 #EFE7D6;">
+        <div style="font-size:24px;line-height:1;">${o.emoji}</div>
+        <div style="font-size:13px;font-weight:700;color:#4A3F2E;">${o.label}</div>
+        ${sel ? checkmark(p.tertiary, '16px', 22) : ''}
+      </button>`;
+  }).join('');
+
   return `
-    <button class="btn-choice" onclick="setState({volume:'${val}'})"
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#FFF8EC;animation:screenIn .42s ease both;">
+      <div style="flex-shrink:0;padding:50px 26px 16px;background:linear-gradient(180deg,${p.tint},#FFF8EC);display:flex;align-items:center;gap:12px;">
+        <button class="btn-back" onclick="setState({screen:'top'})"
+          style="width:40px;height:40px;flex-shrink:0;border:none;border-radius:14px;background:#fff;color:#7A6E58;font-size:18px;cursor:pointer;box-shadow:0 3px 8px rgba(120,100,60,.14);">‹</button>
+        <div>
+          <div style="font-size:19px;font-weight:800;color:#4A3F2E;">せってい ⚙️</div>
+          <div style="font-size:12px;color:#9A8E78;">あなた好みにカスタマイズ</div>
+        </div>
+      </div>
+
+      <div style="flex:1;overflow-y:auto;padding:14px 22px 20px;">
+        <div style="font-size:14px;font-weight:800;color:#4A3F2E;display:flex;align-items:center;gap:7px;">🎨 カラーテーマ</div>
+        <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          ${themeBtns}
+        </div>
+
+        <div style="margin-top:22px;font-size:14px;font-weight:800;color:#4A3F2E;display:flex;align-items:center;gap:7px;">🙂 性別</div>
+        <div style="margin-top:10px;display:flex;gap:9px;">
+          ${genderBtns}
+        </div>
+
+        <div style="margin-top:22px;font-size:14px;font-weight:800;color:#4A3F2E;display:flex;align-items:center;gap:7px;">🧑‍💼 ライフステージ</div>
+        <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          ${stageBtns}
+        </div>
+      </div>
+
+      <div style="flex-shrink:0;padding:12px 22px 24px;background:linear-gradient(180deg,rgba(255,248,236,0),#FFF8EC 40%);">
+        <button class="btn-save" onclick="setState({screen:'top'})"
+          style="width:100%;padding:17px;border:none;border-radius:20px;background:${p.primary};color:${p.btnText};font-family:inherit;font-size:17px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 6px 0 ${p.primaryDark};">
+          保存する 💾
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+// ── Screen: SELECT ────────────────────────────────────────────────────────────
+function renderSelect() {
+  const p = palette();
+  const can = !!(state.volume && state.mood && state.cost);
+
+  function volBtn(emoji, label, en, val) {
+    const sel = state.volume === val;
+    return `<button class="hover-up" onclick="setState({volume:'${val}'})"
       style="position:relative;flex:1;background:#fff;border:2px solid #F1E7CF;border-radius:22px;padding:18px 8px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 0 #F0E6CE;">
       <div style="font-size:40px;line-height:1;">${emoji}</div>
       <div style="font-size:15px;font-weight:700;color:#4A3F2E;">${label}</div>
       <div style="font-size:11px;color:#B0A488;letter-spacing:1px;">${en}</div>
-      ${active ? check('#FFC83D','22px') : ''}
+      ${sel ? checkmark(p.primary, '22px', 27) : ''}
     </button>`;
-}
+  }
 
-function moodBtn(emoji, label, en, val) {
-  const active = state.mood === val;
-  return `
-    <button class="btn-choice" onclick="setState({mood:'${val}'})"
+  function moodBtn(emoji, label, en, val) {
+    const sel = state.mood === val;
+    return `<button class="hover-up" onclick="setState({mood:'${val}'})"
       style="position:relative;flex:1;background:#fff;border:2px solid #E7F1EA;border-radius:20px;padding:16px 4px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:5px;box-shadow:0 4px 0 #E2EFE7;">
       <div style="font-size:34px;line-height:1;">${emoji}</div>
       <div style="font-size:14px;font-weight:700;color:#4A3F2E;">${label}</div>
-      <div style="font-size:10px;color:#A9BCB2;letter-spacing:.5px;">${en}</div>
-      ${active ? check('#5FB89C','20px',26) : ''}
+      <div style="font-size:10px;color:#A9BCB2;">${en}</div>
+      ${sel ? checkmark(p.secondary, '20px', 26) : ''}
     </button>`;
-}
+  }
 
-function costBtn(emoji, label, en, val) {
-  const active = state.cost === val;
-  return `
-    <button class="btn-choice" onclick="setState({cost:'${val}'})"
+  function costBtn(emoji, label, en, val) {
+    const sel = state.cost === val;
+    return `<button class="hover-up" onclick="setState({cost:'${val}'})"
       style="position:relative;flex:1;background:#fff;border:2px solid #FBE7DD;border-radius:22px;padding:18px 8px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 0 #F7E2D6;">
       <div style="font-size:40px;line-height:1;">${emoji}</div>
       <div style="font-size:15px;font-weight:700;color:#4A3F2E;">${label}</div>
       <div style="font-size:11px;color:#C9A998;letter-spacing:1px;">${en}</div>
-      ${active ? check('#FF9B7A','22px') : ''}
+      ${sel ? checkmark(p.tertiary, '22px', 27) : ''}
     </button>`;
-}
+  }
 
-function renderSelect() {
-  const can = !!(state.volume && state.mood && state.cost);
   return `
     <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#FFF8EC;animation:screenIn .42s ease both;">
-      <div style="flex-shrink:0;padding:50px 26px 14px;background:linear-gradient(180deg,#E3F3EC,#FFF8EC);display:flex;align-items:center;gap:12px;">
-        <button class="btn-back" onclick="setState({screen:'top',volume:null,mood:null,cost:null})"
-          style="width:40px;height:40px;flex-shrink:0;border:none;border-radius:14px;background:#ffffff;color:#7A6E58;font-size:18px;cursor:pointer;box-shadow:0 3px 8px rgba(120,100,60,.14);">‹</button>
+      <div style="flex-shrink:0;padding:50px 26px 14px;background:linear-gradient(180deg,${p.tint},#FFF8EC);display:flex;align-items:center;gap:12px;">
+        <button class="btn-back" onclick="setState({screen:'top'})"
+          style="width:40px;height:40px;flex-shrink:0;border:none;border-radius:14px;background:#fff;color:#7A6E58;font-size:18px;cursor:pointer;box-shadow:0 3px 8px rgba(120,100,60,.14);">‹</button>
         <div>
           <div style="font-size:19px;font-weight:800;color:#4A3F2E;">きょうの気分は？</div>
           <div style="font-size:12px;color:#9A8E78;">3つえらんで、朝食を決めよう</div>
@@ -185,7 +347,7 @@ function renderSelect() {
       <div style="flex-shrink:0;padding:14px 22px 26px;background:linear-gradient(180deg,rgba(255,248,236,0),#FFF8EC 40%);">
         ${can
           ? `<button class="btn-decide" onclick="setState({screen:'result'})"
-               style="width:100%;padding:18px;border:none;border-radius:22px;background:#5FB89C;color:#fff;font-family:inherit;font-size:18px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 7px 0 #4A9A82,0 14px 24px -8px rgba(95,184,156,.6);animation:popIn .3s ease;">
+               style="width:100%;padding:18px;border:none;border-radius:22px;background:${p.secondary};color:#fff;font-family:inherit;font-size:18px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 7px 0 ${p.secondaryDark};animation:popIn .3s ease;">
                決定！　🍴
              </button>`
           : `<div style="width:100%;padding:18px;border-radius:22px;background:#EDE6D7;color:#B7A98A;font-size:16px;font-weight:700;text-align:center;letter-spacing:1px;">3つすべて選んでね</div>`
@@ -195,87 +357,111 @@ function renderSelect() {
   `;
 }
 
+// ── Screen: RESULT ────────────────────────────────────────────────────────────
 function renderResult() {
+  const p = palette();
   const r = DATA.find(d => d.input.volume === state.volume && d.input.mood === state.mood && d.input.cost === state.cost);
-  if (!r) return '';
+  if (!r) return `
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;background:linear-gradient(180deg,${p.tint} 0%,#FFF8EC 34%);">
+      <div style="font-size:72px;animation:bob 3s ease-in-out infinite;">🍽️</div>
+      <div style="margin-top:20px;font-size:17px;font-weight:800;color:#4A3F2E;">まだ朝食は決まってないよ</div>
+    </div>`;
 
   const b  = parse(r.smoothie.base);
   const i1 = parse(r.smoothie.ingredient1);
   const i2 = parse(r.smoothie.ingredient2);
+  const price = Math.round((cost(b.name) + cost(i1.name) + cost(i2.name)) / 10) * 10;
   const nodes = [
-    { tag:'ベース', name:b.name,  emoji:b.emoji,  bg:'#EAF6F0', ring:'#5FB89C', plus:true },
-    { tag:'具材 1', name:i1.name, emoji:i1.emoji, bg:'#FFF4D6', ring:'#E0A93A', plus:true },
-    { tag:'具材 2', name:i2.name, emoji:i2.emoji, bg:'#FCEBE3', ring:'#FF9B7A', plus:false }
+    { tag:'ベース', name:b.name,  emoji:b.emoji,  ring:p.secondary,    showPlus:true,  amount:amt(b.name),  timing:TIMINGS[0] },
+    { tag:'具材 1', name:i1.name, emoji:i1.emoji, ring:p.primaryDark,  showPlus:true,  amount:amt(i1.name), timing:TIMINGS[1] },
+    { tag:'具材 2', name:i2.name, emoji:i2.emoji, ring:p.tertiary,     showPlus:false, amount:amt(i2.name), timing:TIMINGS[2] }
   ];
 
   const nodesHtml = nodes.map(n => `
     <div style="display:flex;align-items:center;gap:14px;padding:7px 0;">
-      <div style="width:56px;height:56px;flex-shrink:0;border-radius:50%;background:${n.bg};border:2px solid ${n.ring};display:flex;align-items:center;justify-content:center;font-size:28px;">${n.emoji}</div>
+      <div style="width:54px;height:54px;flex-shrink:0;border-radius:50%;background:#F6F1E7;border:2px solid ${n.ring};display:flex;align-items:center;justify-content:center;font-size:27px;">${n.emoji}</div>
       <div style="flex:1;">
         <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:${n.ring};">${n.tag}</div>
         <div style="font-size:16px;font-weight:700;color:#4A3F2E;">${n.name}</div>
+        <div style="margin-top:2px;font-size:11px;font-weight:600;color:#A99A80;">${n.amount}　・　${n.timing}</div>
       </div>
-      ${n.plus ? '<div style="font-size:18px;font-weight:800;color:#C9BFA8;">＋</div>' : ''}
+      ${n.showPlus ? '<div style="font-size:18px;font-weight:800;color:#C9BFA8;">＋</div>' : ''}
     </div>
   `).join('');
 
   return `
-    <div style="position:absolute;inset:0;overflow-y:auto;background:linear-gradient(180deg,#E3F3EC 0%,#FFF8EC 34%);animation:screenIn .45s ease both;">
-      <div style="padding:52px 24px 30px;">
+    <div style="position:absolute;inset:0;overflow-y:auto;background:linear-gradient(180deg,${p.tint} 0%,#FFF8EC 34%);animation:screenIn .45s ease both;">
+      <div style="padding:50px 24px 28px;">
         <div style="text-align:center;">
-          <div style="display:inline-block;padding:6px 16px;border-radius:999px;background:#fff;color:#5FB89C;font-size:12px;font-weight:800;letter-spacing:2px;box-shadow:0 3px 10px rgba(95,184,156,.18);">YOUR BREAKFAST</div>
+          <div style="display:inline-block;padding:6px 16px;border-radius:999px;background:#fff;color:${p.secondary};font-size:12px;font-weight:800;letter-spacing:2px;box-shadow:0 3px 10px rgba(95,120,110,.18);">YOUR BREAKFAST</div>
           <div style="margin-top:12px;font-size:20px;font-weight:800;color:#4A3F2E;">きみの朝食はこれ！</div>
         </div>
 
-        <div style="margin-top:20px;background:#fff;border-radius:28px;padding:24px;display:flex;align-items:center;gap:18px;box-shadow:0 14px 30px -14px rgba(120,90,30,.3);animation:popIn .5s ease both;">
-          <div style="width:92px;height:92px;flex-shrink:0;border-radius:50%;background:radial-gradient(circle at 50% 40%,#FFF6DC,#FFE7A8);display:flex;align-items:center;justify-content:center;font-size:50px;box-shadow:inset 0 0 0 5px rgba(255,255,255,.7);">${r.bread.emoji}</div>
+        <div style="margin-top:18px;background:#fff;border-radius:28px;padding:22px;display:flex;align-items:center;gap:16px;box-shadow:0 14px 30px -14px rgba(120,90,30,.3);animation:popIn .5s ease both;">
+          <div style="width:88px;height:88px;flex-shrink:0;border-radius:50%;background:radial-gradient(circle at 50% 40%,#fff,${p.plate});display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:inset 0 0 0 5px rgba(255,255,255,.7);">${r.bread.emoji}</div>
           <div>
-            <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#D0A93C;">本日のパン 🍞</div>
-            <div style="margin-top:5px;font-size:23px;font-weight:800;color:#4A3F2E;line-height:1.2;">${r.bread.name}</div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:${p.primaryDark};">本日のパン 🍞</div>
+            <div style="margin-top:5px;font-size:22px;font-weight:800;color:#4A3F2E;line-height:1.2;">${r.bread.name}</div>
           </div>
         </div>
 
-        <div style="margin-top:16px;background:#fff;border-radius:28px;padding:24px 24px 26px;box-shadow:0 14px 30px -14px rgba(95,184,156,.32);animation:popIn .5s ease .08s both;">
+        <div style="margin-top:14px;background:#fff;border-radius:28px;padding:22px 22px 24px;box-shadow:0 14px 30px -14px rgba(95,120,110,.3);animation:popIn .5s ease .08s both;">
           <div style="display:flex;align-items:center;gap:14px;">
-            <div style="position:relative;width:78px;height:78px;flex-shrink:0;border-radius:50%;background:radial-gradient(circle at 50% 40%,#F0FBF6,#CDEFE1);display:flex;align-items:center;justify-content:center;font-size:42px;box-shadow:inset 0 0 0 5px rgba(255,255,255,.7);">
+            <div style="position:relative;width:74px;height:74px;flex-shrink:0;border-radius:50%;background:radial-gradient(circle at 50% 40%,#fff,${p.tint});display:flex;align-items:center;justify-content:center;font-size:40px;box-shadow:inset 0 0 0 5px rgba(255,255,255,.7);">
               ${r.smoothie.emoji}
-              <div style="position:absolute;top:-6px;left:24px;width:14px;height:18px;background:rgba(255,255,255,.8);border-radius:50%;filter:blur(2px);animation:steam 2.6s ease-in-out infinite;"></div>
-              <div style="position:absolute;top:-10px;left:40px;width:12px;height:16px;background:rgba(255,255,255,.7);border-radius:50%;filter:blur(2px);animation:steam 2.6s ease-in-out infinite .9s;"></div>
+              <div style="position:absolute;top:-6px;left:22px;width:14px;height:18px;background:rgba(255,255,255,.8);border-radius:50%;filter:blur(2px);animation:steam 2.6s ease-in-out infinite;"></div>
+              <div style="position:absolute;top:-10px;left:38px;width:12px;height:16px;background:rgba(255,255,255,.7);border-radius:50%;filter:blur(2px);animation:steam 2.6s ease-in-out infinite .9s;"></div>
             </div>
             <div>
-              <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:#5FB89C;">本日のスムージー 🥤</div>
-              <div style="margin-top:5px;font-size:21px;font-weight:800;color:#4A3F2E;line-height:1.2;">${r.smoothie.name}</div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:${p.secondary};">本日のスムージー 🥤</div>
+              <div style="margin-top:5px;font-size:20px;font-weight:800;color:#4A3F2E;line-height:1.2;">${r.smoothie.name}</div>
             </div>
           </div>
-          <div style="margin-top:20px;padding-top:18px;border-top:2px dashed #E7F1EA;">
-            <div style="font-size:12px;font-weight:700;color:#9A8E78;letter-spacing:1px;margin-bottom:6px;">— RECIPE —</div>
+
+          <div style="margin-top:18px;padding-top:16px;border-top:2px dashed #E7E1D2;">
+            <div style="font-size:12px;font-weight:700;color:#9A8E78;letter-spacing:1px;margin-bottom:4px;">— RECIPE —</div>
             ${nodesHtml}
+            <div style="margin-top:8px;padding:12px 16px;border-radius:16px;background:#FBF3DD;display:flex;align-items:center;justify-content:space-between;">
+              <div style="font-size:12px;font-weight:700;color:#9A8157;display:flex;align-items:center;gap:6px;">💰 スムージー材料費（概算）</div>
+              <div style="font-size:19px;font-weight:800;color:${p.primaryDark};">約${price}円</div>
+            </div>
           </div>
         </div>
 
-        <div style="position:relative;margin-top:18px;background:#FFF3CF;border-radius:22px;padding:18px 20px;box-shadow:0 6px 16px -8px rgba(201,154,46,.3);animation:popIn .5s ease .16s both;">
+        <div style="position:relative;margin-top:16px;background:#FFF3CF;border-radius:22px;padding:17px 19px;box-shadow:0 6px 16px -8px rgba(201,154,46,.3);animation:popIn .5s ease .16s both;">
           <div style="position:absolute;top:-10px;left:26px;width:20px;height:20px;background:#FFF3CF;transform:rotate(45deg);"></div>
-          <div style="font-size:14px;font-weight:500;line-height:1.75;color:#6E5F40;">${r.description}</div>
+          <div style="font-size:13.5px;font-weight:500;line-height:1.75;color:#6E5F40;">${r.description}</div>
+          <div style="margin-top:13px;padding-top:13px;border-top:1.5px dashed #EBD79F;display:flex;gap:9px;align-items:flex-start;">
+            <span style="font-size:20px;line-height:1.3;flex-shrink:0;">🧪</span>
+            <div>
+              <div style="font-size:11px;font-weight:800;letter-spacing:1.5px;color:#D08A1E;">冒険メモ</div>
+              <div style="margin-top:3px;font-size:13px;font-weight:600;line-height:1.7;color:#6E5F40;">${SURPRISES[r.id] || ''}</div>
+            </div>
+          </div>
         </div>
 
         <button class="btn-reset" onclick="setState({screen:'top',volume:null,mood:null,cost:null})"
-          style="margin-top:22px;width:100%;padding:17px;border:2px solid #4A3F2E;border-radius:22px;background:#4A3F2E;color:#FFE39A;font-family:inherit;font-size:17px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 6px 0 #2E271B;">
+          style="margin-top:20px;width:100%;padding:16px;border:none;border-radius:22px;background:#4A3F2E;color:#FFE39A;font-family:inherit;font-size:16px;font-weight:800;letter-spacing:1px;cursor:pointer;box-shadow:0 6px 0 #2E271B;">
           もう一度引き直す 🔄
         </button>
-        <div style="height:10px;"></div>
+        <div style="height:8px;"></div>
       </div>
     </div>
   `;
 }
 
+// ── Render ────────────────────────────────────────────────────────────────────
 function render() {
-  const screen = state.screen === 'top' ? renderTop()
-               : state.screen === 'select' ? renderSelect()
-               : renderResult();
+  const p = palette();
+  const screen = state.screen === 'top'      ? renderTop()
+               : state.screen === 'settings' ? renderSettings()
+               : state.screen === 'select'   ? renderSelect()
+               :                               renderResult();
+
   document.getElementById('app').innerHTML = `
-    <div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:24px;">
-      <div style="position:relative;width:390px;height:844px;border-radius:46px;background:#1f1b16;padding:11px;box-shadow:0 40px 80px -24px rgba(60,48,30,.5),0 0 0 2px rgba(0,0,0,.06);">
-        <div style="position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:#FFF8EC;">
+    <div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at 30% 10%,#F2EEE4,#E2DDD1);">
+      <div style="position:relative;width:390px;height:844px;border-radius:46px;background:#1f1b16;padding:11px;box-shadow:0 30px 60px -22px rgba(60,48,30,.5),0 0 0 2px rgba(0,0,0,.06);">
+        <div style="position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:#FFF8EC;${css(p)}">
           ${screen}
         </div>
       </div>
